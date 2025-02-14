@@ -100,13 +100,15 @@ func (w *worker) getObject(name string) (*object, error) {
 // simulates random errors during the value saving to demonstrate eventuality
 func (w *worker) processMetaSavedEvents() {
 	w.metaMu.RLock()
-	defer w.metaMu.RUnlock()
 
 	if len(w.objMetadataSavedEvents) == 0 {
+		w.metaMu.RUnlock()
 		return
 	}
 
 	e := w.objMetadataSavedEvents[0]
+	w.metaMu.RUnlock()
+
 	w.valueMu.Lock()
 	defer w.valueMu.Unlock()
 
@@ -122,13 +124,15 @@ func (w *worker) processMetaSavedEvents() {
 // process a value event from the queue (i.e. update the metadata status to 'ready') and pop if successful
 func (w *worker) processValueSavedEvents() {
 	w.valueMu.RLock()
-	defer w.valueMu.RUnlock()
 
 	if len(w.objValueSavedEvents) == 0 {
+		w.valueMu.RUnlock()
 		return
 	}
 
 	e := w.objValueSavedEvents[0]
+	w.valueMu.RUnlock()
+
 	w.metaMu.Lock()
 	defer w.metaMu.Unlock()
 
@@ -154,8 +158,8 @@ func main() {
 		objValueSavedEvents:    make([]valueSavedEvent, 0),
 	}
 
-	ctx := context.Background()
-	defer ctx.Done()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	metaTicker := time.NewTicker(10 * time.Millisecond)
 	valueTicker := time.NewTicker(10 * time.Millisecond)
@@ -167,6 +171,7 @@ func main() {
 			case <-ctx.Done():
 				return
 			case <-metaTicker.C:
+				w.processMetaSavedEvents()
 				w.processMetaSavedEvents()
 			}
 		}
@@ -221,5 +226,5 @@ func main() {
 		fmt.Printf("%v: %s\n\n", k, v)
 		total += v.Milliseconds()
 	}
-	fmt.Printf("average time: %dms", total/100)
+	fmt.Printf("average time: %dms\n", total/100)
 }
