@@ -15,7 +15,7 @@ const chanceOfError = 0.1
 var (
 	errNotFound = errors.New("not found")
 	errNotReady = errors.New("not ready")
-	errFatal    = errors.New("fatal'")
+	errFatal    = errors.New("fatal")
 )
 
 const (
