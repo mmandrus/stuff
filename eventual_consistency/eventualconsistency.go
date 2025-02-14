@@ -188,9 +188,10 @@ func main() {
 
 	// create a bunch of objects and take note of when the request was made
 	for i := 0; i < 100; i++ {
-		awaitingCompletion[fmt.Sprintf("name-%d", i)] = time.Now()
+		name := fmt.Sprintf("name-%d", i)
+		awaitingCompletion[name] = time.Now()
 		w.createObject(object{
-			name:        fmt.Sprintf("name-%d", i),
+			name:        name,
 			description: fmt.Sprintf("description-%d", i),
 			value:       fmt.Sprintf("value-%d", i),
 		})
