@@ -172,7 +172,6 @@ func main() {
 				return
 			case <-metaTicker.C:
 				w.processMetaSavedEvents()
-				w.processMetaSavedEvents()
 			}
 		}
 	}(ctx)
